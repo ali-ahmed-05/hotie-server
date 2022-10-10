@@ -22,13 +22,23 @@ const createDisclaimers = asyncHandler(async (req, res) => {
 */
 
 const getDisclaimers = asyncHandler(async (req, res) => {
-    const disclaimers = await Disclaimer.find({});
+    let {page = 1, pageSize = 10} = req.query;
+    const count = await Disclaimer.countDocuments();
+    const skip = pageSize * (page - 1);
+
+
+    const disclaimers = await Disclaimer.find().limit(pageSize).skip(skip);
 
     if (disclaimers.length === 0) {
         return res.status(200).send({status: true, disclaimers, message: 'NO Disclaimers exist in DB'})
     }
 
-    res.status(200).send({status: true, disclaimers, message: 'Disclaimers Fetched Successfully'})
+    res.status(200).send({
+        status: true, disclaimers, message: 'Disclaimers Fetched Successfully',
+        page,
+        pageSize,
+        totalPages: Math.ceil(count / pageSize)
+    })
 })
 
 export {getDisclaimers, createDisclaimers}

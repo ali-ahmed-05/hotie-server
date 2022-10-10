@@ -22,13 +22,25 @@ const createNews = asyncHandler(async (req, res) => {
 */
 
 const getNews = asyncHandler(async (req, res) => {
-    const news = await News.find({});
+
+    let {page = 1, pageSize = 10} = req.query;
+    const count = await News.countDocuments();
+    const skip = pageSize * (page - 1);
+
+    const news = await News.find({}).limit(pageSize).skip(skip);
 
     if (news.length === 0) {
         return res.status(200).send({status: true, news, message: 'NO News exist in DB'})
     }
 
-    res.status(200).send({status: true, news, message: 'News Fetched Successfully'})
+    res.status(200).send({
+        status: true,
+        news,
+        message: 'News Fetched Successfully',
+        page,
+        pageSize,
+        totalPages: Math.ceil(count / pageSize)
+    })
 })
 
 export {getNews, createNews}
